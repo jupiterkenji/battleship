@@ -23,7 +23,12 @@ namespace flarebattleship
                 var hitPosition = GetHitPosition();
 
                 var results = stateTracker.Process(hitPosition);
-                var resultsAsString = string.Join(", ", results.Select(result => result.Result));
+                var resultsAsString = string.Join(
+                    ", ",
+                    results
+                        .Where(result => !(result is NullHitResult))
+                        .Select(result => result.Result == "1" ? "Hit" : "Missed")
+                ).Trim(',');
                 Console.WriteLine($"Result: {resultsAsString}");
 
                 IsFinish = stateTracker.IsFinish;
@@ -64,7 +69,6 @@ namespace flarebattleship
         {
             var winners = stateTracker
                 .Players
-                .Cast<BattleshipPlayer>()
                 .Where(player => !player.Board.HasLost)
                 .Select(player => player.Name);
 

@@ -13,6 +13,7 @@ namespace flarebattleship
 
         public IEnumerable<IHitResult> Process(IPosition hitPosition)
         {
+            //jk-todo
             var result = CurrentPlayer.Board.GotHitAt(hitPosition);
 
             currentPlayerIndex = (currentPlayerIndex + 1) % Players.Length;

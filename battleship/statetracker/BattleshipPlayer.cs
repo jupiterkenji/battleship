@@ -6,8 +6,8 @@ namespace flarebattleship
     {
         public BattleshipPlayer(string name, Board board)
         {
-            Name = name;
-            Board = Board;
+            this.Name = name;
+            this.Board = board;
         }
 
         public string Name {get; private set;}
