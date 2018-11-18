@@ -53,7 +53,7 @@ namespace flarebattleship
                 else
                 {
                     string message;
-                    if (!stateTracker.Validate(input, out message))
+                    if (!stateTracker.ValidateHitPosition(input, out message))
                     {
                         Console.WriteLine($"> Error input: {message}");
                     }

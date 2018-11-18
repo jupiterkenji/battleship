@@ -20,7 +20,7 @@ namespace flarebattleship
                 for (var battleShipIndex = 0; battleShipIndex < Game.TotalBattleShips; battleShipIndex++)
                 {
                     Console.WriteLine($"=================== Setup for Player {playerIndex} ({playerName})- Battleship #{battleShipIndex}/{Game.TotalBattleShips} ===================");
-                    var battleshipConfiguration = GetBattleShipConfiguration(battleShipIndex);
+                    var battleshipConfiguration = GetBattleShipConfiguration(battleShipIndex, existingBattleshipConfigurations: battleshipConfigurations);
                     battleshipConfigurations.Add(battleshipConfiguration);
                 }
 
@@ -31,7 +31,7 @@ namespace flarebattleship
             return new GameConfiguration(Game.BoardWidth, Game.BoardHeight) {PlayerConfigurations = playerConfigurations};
         }
 
-        static BattleshipConfiguration GetBattleShipConfiguration(int battleShipIndex)
+        static BattleshipConfiguration GetBattleShipConfiguration(int battleShipIndex, IEnumerable<BattleshipConfiguration> existingBattleshipConfigurations)
         {
             Console.WriteLine($"Note board size: {Game.BoardWidth}x{Game.BoardHeight}");
 
@@ -43,7 +43,7 @@ namespace flarebattleship
                     Console.WriteLine($"Please enter battleship #{battleShipIndex} x,y,orientation(h/v),size i.e 10,10,h,10: ");
                     configuration = new BattleshipConfiguration(Console.ReadLine());
 
-                    var validation = new BoardConfigurationValidation(Game.BoardWidth, Game.BoardHeight, configuration.Position);
+                    var validation = new BoardConfigurationValidation(Game.BoardWidth, Game.BoardHeight, configuration.Position, configuration.Orientation, configuration.Size, existingBattleshipConfigurations);
                     string  message;
                     if (!validation.Validate(out message))
                     {
@@ -54,7 +54,7 @@ namespace flarebattleship
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Invalid input: {ex.ToString()}");
+                    Console.WriteLine($"Invalid input: {ex.Message}");
                 }
             }
         }

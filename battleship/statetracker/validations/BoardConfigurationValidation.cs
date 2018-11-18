@@ -1,16 +1,21 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace flarebattleship
 {
     class BoardConfigurationValidation: IValidation
     {
-        public BoardConfigurationValidation(int width, int height, IPosition position)
+        public BoardConfigurationValidation(int width, int height, IPosition position, Orientation orientation, int size, IEnumerable<BattleshipConfiguration> existingBattleshipConfigurations = null)
         {
             this.width = width;
             this.height = height;
 
             this.position = position;
+            this.orientation = orientation;
+            this.size = size;
+
+            this.existingBattleshipConfigurations = existingBattleshipConfigurations;
         }
 
         public bool Validate(out string message)
@@ -18,34 +23,75 @@ namespace flarebattleship
             var errorMessages = new StringBuilder();
             if (position is XYPosition xyPosition)
             {
-                if (xyPosition.X < 0)
+                var boardPositionValidation = new BoardPositionValidation(width, height, position);
+                string boardPositionValidationMessage;
+                if (!boardPositionValidation.Validate(out boardPositionValidationMessage))
                 {
-                    errorMessages.Append($"X position '{xyPosition.X}' cannot be negative");
+                    errorMessages.Append(boardPositionValidationMessage+", ");
                 }
 
-                if (xyPosition.X >= width)
+                if (size <= 0)
                 {
-                    errorMessages.Append($"X position '{xyPosition.X}' is outside the board width bound '{width}'");
+                    errorMessages.Append($"Size '{size}' cannot be negative, ");
                 }
 
-                if (xyPosition.Y < 0)
+                string orientationAndSizeMessage;
+                if (!ValidateOrientationAndSize(xyPosition, out orientationAndSizeMessage))
                 {
-                    errorMessages.Append($"Y position '{xyPosition.Y}' cannot be negative");
+                    errorMessages.Append(orientationAndSizeMessage+ ", ");
                 }
 
-                if (xyPosition.Y >= height)
+                string existingBattleshipConfigurationsMessage;
+                if (!ValidateExistingBattleshipConfigurations(xyPosition, out existingBattleshipConfigurationsMessage))
                 {
-                    errorMessages.Append($"Y position '{xyPosition.Y}' is outside the board height bound '{height}'");
+                    errorMessages.Append(existingBattleshipConfigurationsMessage+ ", ");
                 }
+
             }
 
-            message = errorMessages.ToString();
+            message = errorMessages.ToString().Trim(' ', ',');
             return errorMessages.Length == 0;
+        }
+
+        bool ValidateOrientationAndSize(XYPosition xyPosition, out string message)
+        {
+            message = "";
+            switch (orientation)
+            {
+                case Orientation.Horizontal:
+                    if (xyPosition.X + size >= width)
+                    {
+                        message = $"X + size ({xyPosition.X} + {size}) is bigger than width bound '{width}', ";
+                        return false;
+                    }
+                    break;
+                case Orientation.Vertical:
+                    if (xyPosition.Y + size >= height)
+                    {
+                        message = $"Y + size ({xyPosition.Y} + {size}) is bigger than height bound '{height}', ";
+                        return false;
+                    }
+                    break;
+            }
+
+            return true;
+        }
+
+        bool ValidateExistingBattleshipConfigurations(XYPosition xyPosition, out string message)
+        {
+            message = "";
+            return true;
         }
 
         int width;
         int height;
 
         IPosition position;
+
+        int size;
+
+        Orientation orientation;
+
+        IEnumerable<BattleshipConfiguration> existingBattleshipConfigurations;
     }
 }

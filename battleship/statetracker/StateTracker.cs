@@ -13,12 +13,19 @@ namespace flarebattleship
 
         public IEnumerable<IHitResult> Process(IPosition hitPosition)
         {
-            //jk-todo
-            var result = CurrentPlayer.Board.GotHitAt(hitPosition);
+            var results = new List<IHitResult>();
+
+            var otherPlayers = Players.Except(new[] {CurrentPlayer});
+
+            foreach (var otherPlayer in otherPlayers)
+            {
+                var playerResults = otherPlayer.Board.GotHitAt(hitPosition);
+                results.AddRange(playerResults);
+            }
 
             currentPlayerIndex = (currentPlayerIndex + 1) % Players.Length;
 
-            return result;
+            return results;
         }
 
         public BattleshipPlayer[] Players {get; private set;}
@@ -27,12 +34,20 @@ namespace flarebattleship
 
         public BattleshipPlayer CurrentPlayer => Players[currentPlayerIndex];
 
-        public bool Validate(string input, out string message)
+        public bool ValidateHitPosition(string input, out string message)
         {
-            var position = Helper.Convert(input);
+            try
+            {
+                var position = Helper.Convert(input);
 
-            var validation = new BoardValidation(CurrentPlayer.Board, position);
-            return validation.Validate(out message);
+                var validation = new BoardPositionValidation(CurrentPlayer.Board.Width, CurrentPlayer.Board.Height, position);
+                return validation.Validate(out message);
+            }
+            catch (Exception ex)
+            {
+                message = ex.Message;
+                return false;
+            }
         }
 
         public bool IsFinish => Players.Any(player => player.Board.HasLost);
